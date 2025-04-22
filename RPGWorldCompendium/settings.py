@@ -53,7 +53,7 @@ MIDDLEWARE = [
 ]
 
 CORS_ORIGIN_WHITELIST = (
-    'http://localhost:8080',
+    'http://localhost:5173',
 )
 
 ROOT_URLCONF = 'RPGWorldCompendium.urls'
