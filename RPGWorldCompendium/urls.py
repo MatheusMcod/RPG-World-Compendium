@@ -4,5 +4,5 @@ from users import urls
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('api/v1/users/', include(urls.authUrlpatterns)),
+    path('api/v1/user/', include(urls.authUrlpatterns)),
 ]
