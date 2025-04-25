@@ -12,8 +12,11 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 
 import json
 import os
+from pathlib import Path
 
 from dotenv import find_dotenv, load_dotenv
+
+BASE_DIR = Path(__file__).resolve().parent.parent
 
 ENV_FILE = find_dotenv()
 if ENV_FILE:
@@ -78,7 +81,7 @@ WSGI_APPLICATION = 'RPGWorldCompendium.wsgi.application'
 
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
-        'rest_framework.authentication.TokenAuthentication',
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
     ],
 }
 
@@ -87,12 +90,8 @@ REST_FRAMEWORK = {
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'postgres',
-        'USER': 'postgres',
-        'PASSWORD': 'admin',
-        'HOST': '172.28.148.179',
-        'PORT': '5432',
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': BASE_DIR / 'db.sqlite3',
     }
 }
 
