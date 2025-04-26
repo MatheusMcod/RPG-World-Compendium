@@ -65,9 +65,16 @@ WSGI_APPLICATION = 'RPGWorldCompendium.wsgi.application'
 SECRET_KEY = os.getenv('JWT_SECRET_KEY')
 
 SIMPLE_JWT = {
-    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=60),
-    "REFRESH_TOKEN_LIFETIME": timedelta(days=1),
+    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=1),
+    "REFRESH_TOKEN_LIFETIME": timedelta(days=7),
     "SIGNING_KEY": SECRET_KEY,
+    'AUTH_COOKIE': 'refresh',
+    'ROTATE_REFRESH_TOKENS': True,
+    'BLACKLIST_AFTER_ROTATION': True,
+    'AUTH_COOKIE_SECURE': False,  # True in prod
+    'AUTH_COOKIE_HTTP_ONLY': True,
+    'AUTH_COOKIE_PATH': '/api/v1/user/auth/',
+    'AUTH_COOKIE_SAMESITE': 'Strict',
 }
 
 REST_FRAMEWORK = {
