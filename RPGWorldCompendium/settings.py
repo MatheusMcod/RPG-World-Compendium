@@ -21,9 +21,10 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'users',
     'rest_framework',
     'rest_framework.authtoken',
+    'rest_framework_simplejwt.token_blacklist',
+    'users',
     'corsheaders',
 ]
 
@@ -63,19 +64,6 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'RPGWorldCompendium.wsgi.application'
 SECRET_KEY = os.getenv('JWT_SECRET_KEY')
-
-SIMPLE_JWT = {
-    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=1),
-    "REFRESH_TOKEN_LIFETIME": timedelta(days=7),
-    "SIGNING_KEY": SECRET_KEY,
-    'AUTH_COOKIE': 'refresh',
-    'ROTATE_REFRESH_TOKENS': True,
-    'BLACKLIST_AFTER_ROTATION': True,
-    'AUTH_COOKIE_SECURE': False,  # True in prod
-    'AUTH_COOKIE_HTTP_ONLY': True,
-    'AUTH_COOKIE_PATH': '/api/v1/user/auth/',
-    'AUTH_COOKIE_SAMESITE': 'Strict',
-}
 
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
