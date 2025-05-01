@@ -1,10 +1,13 @@
-from rest_framework.views import APIView
-from rest_framework.response import Response
-from rest_framework import status
-from .serializers import CampaignSerializer, InviteSerializer
-from .models import Invite, Campaigns
-from rest_framework.permissions import IsAuthenticated
 from django.db.models import Q
+from rest_framework import status
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
+from rest_framework.views import APIView
+
+from .models import Campaigns, Invite, JoinRequest
+from .serializers import (CampaignSerializer, InviteConfirmSerializer,
+                          InviteSerializer, JoinConfirmSerializer,
+                          JoinRequestSerializer)
 
 
 class CampaignViewList(APIView):
@@ -75,6 +78,12 @@ class InviteAcceptView(APIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request, invite_id):
+        serializer = InviteConfirmSerializer(data=request.data)
+
+        if not serializer.is_valid():
+            return Response(serializer.errors,
+                            status=status.HTTP_400_BAD_REQUEST)
+
         try:
             invite = Invite.objects.get(
                 id=invite_id, invited_user=request.user)
@@ -82,12 +91,69 @@ class InviteAcceptView(APIView):
             return Response({'detail': 'Convite não encontrado.'},
                             status=status.HTTP_404_NOT_FOUND)
 
-        if invite.accepted:
+        if invite.accepted and invite.status == 'accepted':
             return Response({'detail': 'Convite já aceito.'},
                             status=status.HTTP_400_BAD_REQUEST)
 
-        invite.accepted = True
+        if serializer.status == 'accepted':
+            invite.accepted = True
+            invite.status = serializer.status
+            invite.campaign.players.add(request.user)
+        elif serializer.status == 'rejected':
+            invite.status = serializer.status
+
         invite.save()
-        invite.campaign.players.add(request.user)
+
         return Response({'detail': 'Convite aceito!'},
+                        status=status.HTTP_200_OK)
+
+
+class JoinRequestCreateView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        serializer = JoinRequestSerializer(data=request.data)
+        if serializer.is_valid():
+            campaign = serializer.validated_data['campaign']
+            if not campaign.isPublic:
+                return Response({'detail': 'Essa campanha não é pública.'},
+                                status=status.HTTP_403_FORBIDDEN)
+            serializer.save(user=request.user)
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class JoinRequestAcceptView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, request_join_id):
+        serializer = JoinConfirmSerializer(data=request.data)
+
+        if not serializer.is_valid():
+            return Response(serializer.errors,
+                            status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            join_request = JoinRequest.objects.get(id=request_join_id)
+        except JoinRequest.DoesNotExist:
+            return Response({'detail': 'Solicitação não encontrada.'},
+                            status=status.HTTP_404_NOT_FOUND)
+
+        if join_request.campaign.master != request.user:
+            return Response({'detail': 'Apenas o mestre pode aceitar.'},
+                            status=status.HTTP_403_FORBIDDEN)
+
+        if join_request.accepted:
+            return Response({'detail': 'Solicitação já aceita.'},
+                            status=status.HTTP_400_BAD_REQUEST)
+
+        if serializer.status == 'accepted':
+            join_request.accepted = True
+            join_request.status = serializer.status
+            join_request.campaign.players.add(request.user)
+        elif serializer.status == 'rejected':
+            join_request.status = serializer.status
+
+        join_request.save()
+        return Response({'detail': 'Solicitação aceita.'},
                         status=status.HTTP_200_OK)

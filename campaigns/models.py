@@ -22,6 +22,11 @@ class Invite(models.Model):
     invited_by = models.ForeignKey(User, on_delete=models.CASCADE,
                                    related_name='invites_sent')
     accepted = models.BooleanField(default=False)
+    status = models.CharField(choices=[
+        ('pending', 'Pendente'),
+        ('accepted', 'Aceito'),
+        ('rejected', 'Recusado')
+    ], default='pending')
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
@@ -29,3 +34,23 @@ class Invite(models.Model):
 
     def __str__(self):
         return f"Convite para {self.invited_user.username} na campanha {self.campaign.worldName}"
+
+
+class JoinRequest(models.Model):
+    campaign = models.ForeignKey(
+        'campaign', on_delete=models.CASCADE, related_name='join_requests')
+    user = models.ForeignKey(
+        User, on_delete=models.CASCADE, related_name='join_requests')
+    accepted = models.BooleanField(default=False)
+    status = models.CharField(choices=[
+        ('pending', 'Pendente'),
+        ('accepted', 'Aceito'),
+        ('rejected', 'Recusado')
+    ], default='pending')
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ('campaign', 'user')
+
+    def __str__(self):
+        return f"{self.user.username} pediu para entrar em {self.campaign.worldName}"

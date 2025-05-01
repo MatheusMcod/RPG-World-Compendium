@@ -1,7 +1,9 @@
 from rest_framework import serializers
-from users.serializers import UserSerializer
-from .models import Campaigns, Invite
+
 from users.models import User
+from users.serializers import UserSerializer
+
+from .models import Campaigns, Invite, JoinRequest
 
 
 class CampaignSerializer(serializers.ModelSerializer):
@@ -27,5 +29,24 @@ class InviteSerializer(serializers.ModelSerializer):
     class Meta:
         model = Invite
         fields = ['id', 'campaign', 'invited_user',
-                  'invited_by', 'accepted', 'created_at']
-        read_only_fields = ['invited_by', 'accepted', 'created_at']
+                  'invited_by', 'accepted', 'status', 'created_at']
+        read_only_fields = ['invited_by', 'accepted', 'status', 'created_at']
+
+
+class InviteConfirmSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Invite
+        fields = ['status']
+        
+
+class JoinRequestSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = JoinRequest
+        fields = ['id', 'campaign', 'user', 'accepted', 'status', 'created_at']
+        read_only_fields = ['user', 'accepted', 'status', 'created_at']
+
+
+class JoinConfirmSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = JoinRequest
+        fields = ['status']
