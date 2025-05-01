@@ -3,7 +3,7 @@ from django.db import models
 from users.models import User
 
 
-class campaign(models.Model):
+class Campaigns(models.Model):
     worldName = models.CharField(max_length=255)
     description = models.TextField()
     master = models.OneToOneField(
@@ -15,7 +15,7 @@ class campaign(models.Model):
 
 
 class Invite(models.Model):
-    campaign = models.ForeignKey('campaign', on_delete=models.CASCADE,
+    campaign = models.ForeignKey('Campaigns', on_delete=models.CASCADE,
                                  related_name='invites')
     invited_user = models.ForeignKey(User, on_delete=models.CASCADE,
                                      related_name='invites_received')

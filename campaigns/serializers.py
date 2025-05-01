@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from users.serializers import UserSerializer
-from .models import campaign, Invite
+from .models import Campaigns, Invite
 from users.models import User
 
 
@@ -10,12 +10,12 @@ class CampaignSerializer(serializers.ModelSerializer):
     players = UserSerializer(many=True, read_only=True)
 
     class Meta:
-        model = campaign
+        model = Campaigns
         fields = [
             'id',
             'worldName',
             'description',
-            'master',
+            'master_id',
             'players',
             'isPublic',
             'created_at',
