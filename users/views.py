@@ -1,5 +1,3 @@
-from datetime import datetime, timedelta, timezone
-
 from django.conf import settings
 from rest_framework import generics, status
 from rest_framework.permissions import IsAuthenticated
