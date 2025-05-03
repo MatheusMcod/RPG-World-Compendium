@@ -37,6 +37,25 @@ class CampaignView(APIView):
                             status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+    def delete(self, request):
+        campaign_id = self.request.query_params.get('campaign_id')
+        if not campaign_id:
+            return Response({'detail': 'ID da campanha não fornecido.'})
+
+        try:
+            campaign = Campaigns.objects.get(id=campaign_id)
+        except Campaigns.DoesNotExist:
+            return Response({'detail': 'Campanha não encontrada.'},
+                            status=status.HTTP_404_NOT_FOUND)
+
+        if campaign.master != request.user:
+            return Response({'detail': 'Você não tem permissão para remover essa campanha.'},
+                            status=status.HTTP_403_FORBIDDEN)
+
+        campaign.delete()
+        return Response({'detail': 'Campanha deletada com sucesso.'},
+                        status=status.HTTP_204_NO_CONTENT)
+
 
 class InviteView(APIView):
     permission_classes = [IsAuthenticated]
@@ -58,7 +77,11 @@ class InviteView(APIView):
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-    def delete(self, request, invite_id):
+    def delete(self, request):
+        invite_id = self.request.query_params.get('invite_id')
+        if not invite_id:
+            return Response({'detail': 'ID do convite não fornecido.'},
+                            status=status.HTTP_400_BAD_REQUEST)
         try:
             invite = Invite.objects.get(id=invite_id)
         except Invite.DoesNotExist:
@@ -95,12 +118,14 @@ class InviteAcceptView(APIView):
             return Response({'detail': 'Convite já aceito.'},
                             status=status.HTTP_400_BAD_REQUEST)
 
-        if serializer.status == 'accepted':
+        data_status = serializer.validated_data['status']
+
+        if data_status == 'accepted':
             invite.accepted = True
-            invite.status = serializer.status
+            invite.status = data_status
             invite.campaign.players.add(request.user)
-        elif serializer.status == 'rejected':
-            invite.status = serializer.status
+        elif data_status == 'rejected':
+            invite.status = data_status
 
         invite.save()
 
@@ -108,8 +133,13 @@ class InviteAcceptView(APIView):
                         status=status.HTTP_200_OK)
 
 
-class JoinRequestCreateView(APIView):
+class JoinRequestView(APIView):
     permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        join_request = JoinRequest.objects.all()
+        serializer = JoinRequestSerializer(join_request, many=True)
+        return Response(serializer.data)
 
     def post(self, request):
         serializer = JoinRequestSerializer(data=request.data)
@@ -121,6 +151,21 @@ class JoinRequestCreateView(APIView):
             serializer.save(user=request.user)
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+    def delete(self, request):
+        join_id = self.request.query_params.get('join_id')
+        if not join_id:
+            return Response({'detail': 'ID da solictição não fornecido.'},
+                            status=status.HTTP_400_BAD_REQUEST)
+        try:
+            join_request = JoinRequest.objects.get(id=join_id)
+        except JoinRequest.DoesNotExist:
+            return Response({'detail': 'Solicitação não encontrado.'},
+                            status=status.HTTP_404_NOT_FOUND)
+
+        join_request.delete()
+        return Response({'detail': 'Solicitação deletado com sucesso.'},
+                        status=status.HTTP_204_NO_CONTENT)
 
 
 class JoinRequestAcceptView(APIView):
@@ -147,12 +192,14 @@ class JoinRequestAcceptView(APIView):
             return Response({'detail': 'Solicitação já aceita.'},
                             status=status.HTTP_400_BAD_REQUEST)
 
-        if serializer.status == 'accepted':
+        data_status = serializer.validated_data['status']
+
+        if data_status == 'accepted':
             join_request.accepted = True
-            join_request.status = serializer.status
+            join_request.status = data_status
             join_request.campaign.players.add(request.user)
-        elif serializer.status == 'rejected':
-            join_request.status = serializer.status
+        elif data_status == 'rejected':
+            join_request.status = data_status
 
         join_request.save()
         return Response({'detail': 'Solicitação aceita.'},

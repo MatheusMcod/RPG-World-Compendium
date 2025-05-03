@@ -37,7 +37,7 @@ class InviteConfirmSerializer(serializers.ModelSerializer):
     class Meta:
         model = Invite
         fields = ['status']
-        
+
 
 class JoinRequestSerializer(serializers.ModelSerializer):
     class Meta:
