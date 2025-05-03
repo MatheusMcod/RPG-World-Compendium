@@ -37,6 +37,28 @@ class CampaignView(APIView):
                             status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+    def put(self, request):
+        campaign_id = request.data.get('id')
+        if not campaign_id:
+            return Response({'detail': 'ID da campanha não fornecido.'},
+                            status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            campaign = Campaigns.objects.get(id=campaign_id)
+        except Campaigns.DoesNotExist:
+            return Response({'detail': 'Campanha não encontrada.'},
+                            status=status.HTTP_404_NOT_FOUND)
+
+        if campaign.master != request.user:
+            raise Response({'Você não tem permissão para atualizar essa campanha.'},
+                           status=status.HTTP_403_FORBIDDEN)
+
+        serializer = CampaignSerializer(campaign, data=request.data)
+        if serializer.is_valid():
+            updated_campaign = serializer.save()
+            return Response(CampaignSerializer(updated_campaign).data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
     def delete(self, request):
         campaign_id = self.request.query_params.get('campaign_id')
         if not campaign_id:
@@ -151,7 +173,7 @@ class JoinRequestView(APIView):
             serializer.save(user=request.user)
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-    
+
     def delete(self, request):
         join_id = self.request.query_params.get('join_id')
         if not join_id:
