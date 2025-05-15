@@ -14,8 +14,22 @@ class CampaignViewList(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
-        campaigns = Campaigns.objects.filter(isPublic=True)
+        campaigns = Campaigns.objects.filter(
+            isPublic=True).exclude(master=request.user)
         serializer = CampaignSerializer(campaigns, many=True)
+        return Response(serializer.data)
+
+
+class CampaignViewGetById(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, campaign_id):
+        try:
+            campaign = Campaigns.objects.get(id=campaign_id)
+        except Campaigns.DoesNotExist:
+            raise Response({'detail': 'Campanha não encontrada.'},
+                           status=status.HTTP_404_NOT_FOUND)
+        serializer = CampaignSerializer(campaign)
         return Response(serializer.data)
 
 

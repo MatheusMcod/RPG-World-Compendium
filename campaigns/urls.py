@@ -1,10 +1,12 @@
 from django.urls import path
 
-from .views import (CampaignView, CampaignViewList, InviteAcceptView,
-                    InviteView, JoinRequestAcceptView, JoinRequestView)
+from .views import (CampaignView, CampaignViewGetById, CampaignViewList,
+                    InviteAcceptView, InviteView, JoinRequestAcceptView,
+                    JoinRequestView)
 
 urlpatterns = [
     path('', CampaignView.as_view(), name='campaign'),
+    path('<int:campaign_id>', CampaignViewGetById.as_view(), name='campaign-by-id'),
     path('list/', CampaignViewList.as_view(), name='campaign-list'),
     path('invite/', InviteView.as_view(), name='invite'),
     path('invite/<int:invite_id>/response/',

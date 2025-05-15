@@ -6,7 +6,7 @@ from users.models import User
 class Campaigns(models.Model):
     worldName = models.CharField(max_length=255)
     description = models.TextField()
-    master = models.OneToOneField(
+    master = models.ForeignKey(
         User, on_delete=models.CASCADE, related_name='campaign_master')
     players = models.ManyToManyField(User, related_name='campaign_players')
     isPublic = models.BooleanField(default=False)

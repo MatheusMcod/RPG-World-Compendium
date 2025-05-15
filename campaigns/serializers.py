@@ -29,7 +29,7 @@ class InviteSerializer(serializers.ModelSerializer):
     campaign = CampaignSerializer(read_only=True)
     invited_user = UserSerializer(read_only=True)
     invited_by = UserSerializer(read_only=True)
-    
+  
     class Meta:
         model = Invite
         fields = ['id', 'campaign', 'invited_user',
